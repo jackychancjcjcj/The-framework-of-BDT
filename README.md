@@ -34,5 +34,5 @@ info:数据获取涉及技术
     topic，topic下包含多个partition，每个partition对应逻辑log，由多个segment组成。  
     一般是以物理偏移地址作为index。kafka为每个分区创建文件夹，文件中每个segment会由一个index（索引）和log（message信息）组成。  
 ## 流处理
+根据实时性的不同，也可以分为以IBM InfoSphere Streams为代表的，消息立刻处理；另一种是Spark Streaming，将数据存在内存中，较小的批处理模拟流处理（设置窗口大小Dstream）。  
 
-    
