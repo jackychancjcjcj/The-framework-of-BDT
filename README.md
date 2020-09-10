@@ -118,5 +118,5 @@ share nothin数据同步与故障恢复是灾难，因为元数据存储在不�
 * 最早采用MPP架构的是Teradata数据库，整体采用sharenothin架构进行组织。早期在postgreSQL基础采用MPP架构，后期为了兼容hadoop上台，推出了HAWQ，上层分析还是原本的greenplum高性能引擎，下层存储采用HDFS。
 * 因为MPP架构需要在不同处理单元之间传递信息，因此效率会比SMP差些。但当需要处理的事务达到一定规模的时候，MPP效率会比较高。这需要视通信时间占用计算时间比例而定，通信时间比较多时，MPP不占优势。
 #### DB2 DPF
-IBM推出的ISAS装载的就是DB2 DPF（database partitioning feature）。每个数据独立，服务器之间通过万兆交换机交换数据，服务器内部通过share_memory实现相互访问。  
-与greenplum类似，都是通过hash算法实现表分区，实现并行处理问题。  
+* IBM推出的ISAS装载的就是DB2 DPF（database partitioning feature）。每个数据独立，服务器之间通过万兆交换机交换数据，服务器内部通过share_memory实现相互访问。  
+* 与greenplum类似，都是通过hash算法实现表分区，实现并行处理问题。  
