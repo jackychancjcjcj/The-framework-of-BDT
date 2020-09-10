@@ -84,3 +84,39 @@ Spark Streaming（SS）将流式计算分为一系列短小的批处理作业，
 Complex event processing，流式处理的核心技术。
 ### Eagle
 eBay开源的分布式实时安全监控方案，通过离线机器学习训练模型和实时流引擎，监控出对敏感数据的访问或恶意的操作。
+## 交互式分析
+定义：基于历史数据的交互式查询（Interactive Query），通常的时间跨度在数十秒到数分钟间
+通常来说特点如下：
+* 时延低
+* 查询条件复杂
+* 查询范围大
+* 返回结果小
+* 并发要求高
+* 需要sql等接口
+传统解决方案，数据库所引、内存缓存、cube（数据预聚合），接下来讨论下新的解决方案。
+### MPP DB技术
+MPP是系统架构的一种服务器分类方法，海量并行处理架构（Massive Parallel Processing，MPP）。目前有三大商用服务器，SMP、NUMA、MPP。
+#### SMP（Symmetric Multi-Processor）
+* 对称多处理器结构，是指服务器中多个CPU对称工作，无主次或从属关系。  
+* 各cpu共享相同的物理内存，每个cpu访问内存中任何地址时间都是相同的，也被称为一致性存储器访问结构（Uniform Memory Access，UMA）。对SMP扩展的方式有增加内存、更快的cpu、增加cpu、扩充I/O及更多的外部设备等等。  
+SMP服务器主要特征是共享，这导致SMP的扩展能力非常有限，每个共享环节都有可能造成瓶颈，最受限制的是内存。由于每个cpu必须通过相同的内存总线访问相同的内存资源，因此cpu过多会造成cpu资源浪费。  
+#### NUMA（Non-Uniform Memory Access）
+* 为了改善SMP扩展能力差，NUMA应运而生，可以把上百个cpu部署到一台服务器上。  
+* NUMA服务器的基本特征是拥有多个CPU模块，每个模块由多个CPU组成。节点之间可以通过互联模块进行信息交换，每个cpu都可以访问整个系统的内存。  
+* 缺陷是，由于访问异地内存时延远远高于本地内存，因此cpu数量增加也不能使系统性能线性增加。
+#### MPP 
+* 多台SMP服务器通过一定节点互联网络进行连接，每个节点之访问自己的本地资源，是一种完全无共享结构，扩展能力最强，理论上无限。目前可达512节点互联，几千个cpu。  
+* 与NUMA不同，不存在异地访问问题，每个节点访问自己内容。不同节点间通过节点互联网络信息交互，这个过程称为数据重分配（Data Redistribution）  
+* 但MPP服务器需要一种复杂机制调度和平衡各个节点的负载和并行。现在一般是通过系统级软件来屏蔽这种复杂性（如NCR的Teradata)
+* OLAP因为有大量数据交互要选择MPP，OLTP只是大吞吐而已选择NUMA即可。
+MPP架构可以分为share disk和share nothing两种：
+* share disk：每个处理单元使用私有cpu和memory，共享磁盘。当磁盘接口达到瓶颈是，增加节点无用。
+* share nothing：每个处理单元私有cpu、memory和磁盘。
+share nothin数据同步与故障恢复是灾难，因为元数据存储在不同服务器上。
+### 典型的MPP数据库
+#### Greenplum架构
+* 最早采用MPP架构的是Teradata数据库，整体采用sharenothin架构进行组织。早期在postgreSQL基础采用MPP架构，后期为了兼容hadoop上台，推出了HAWQ，上层分析还是原本的greenplum高性能引擎，下层存储采用HDFS。
+* 因为MPP架构需要在不同处理单元之间传递信息，因此效率会比SMP差些。但当需要处理的事务达到一定规模的时候，MPP效率会比较高。这需要视通信时间占用计算时间比例而定，通信时间比较多时，MPP不占优势。
+#### DB2 DPF
+IBM推出的ISAS装载的就是DB2 DPF（database partitioning feature）。每个数据独立，服务器之间通过万兆交换机交换数据，服务器内部通过share_memory实现相互访问。  
+与greenplum类似，都是通过hash算法实现表分区，实现并行处理问题。  
