@@ -131,5 +131,19 @@ MPP DB的核心原理是将一个大的查询分解成一个个子查询，分�
 ### SQL on Hadoop
 指的是Hadoop生态里一系列支持SQL接口的组件和技术。
 #### Hive
-Hive架构
+![Hive架构](https://github.com/jackychancjcjcj/The-framework-of-BDT/blob/master/hive.png)  
+组件可以分为两大类：服务器端组件和客户端组件
+* 服务器端组件
+ * driver组件：complier、optimizer、executor，其作用是将hiveql语句进行解析、编译优化then生成计划，调用底层mapreduce计算框架。
+ * metastore组件：元数据服务组件，存储hive的元数据。hive支持把metastore服务独立出来，安装到远程服务器上，使得hive更健壮。
+ * thrift服务：是facebook开发的一个软件框架，用来进行可扩展且跨语言的服务开发。hive集成该服务，使不同程序语言可以调用hive接口。
+* 客户端组件
+ * CLI：command line interface，命令行接口。
+ * thrift客户端
+ * web gui：hive客户端提供了一种通过网页的方式访问hive所提供的服务。  
+ ##### metastore组件
+ metastore包括两部分：服务和后台数据的存储，后台存储是关系型数据库。服务是建立在后台数据存储介质之上的。在默认情况下，metastore和hive是安装在一起，也可以将metastore从hive中脱离出来，独立安装在一个集群中，这样就可以把元数据放到防火墙中，客户端可以访问hive。使用远程的metastore服务，可以让metastore服务和hive运行在不同的进程里，保证了hive稳定性和hive效率。  
+ 一句话描述hive：hive是基于hadoop的数据仓库工具，可以将结构化的数据文件映射成一张数据库表，提供完整的sql查询功能，将sql语句转换为mapreduce任务运行。hive类sql，最大缺点是慢，短、平、快的业务不符合hadoop批量的特性。
+ #### Hbase
+ hbase是分布式、面向列的开源数据库。
 
