@@ -181,3 +181,43 @@ MapReduce致力于解决大数据处理问题，在处理时，每个节点就�
 #### shuffle
 shuffle过程是mapreduce核心所在，shuffle的大致范围就是怎么样把maptask的输出结果有效地传送到reduce端。  
 在hadoop里，大部分maptask和reducetask的执行在不同的节点上。当然，很多情况下reduce在执行时需要跨节点去拉去其他节点的maptask结果。  
+![framework](https://github.com/jackychancjcjcj/The-framework-of-BDT/blob/master/shuffle_framework.png)  
+* map端主要分四步  
+1. 输入数据来源于HDFS的block  
+2. partitioner接口决定数
+#### 性能差的主要原因
+宏观上，每个Hadoop作业都要经过MapPhase和ReducePhase。hadoop的两个子阶段严重降低了其性能。一方面是map阶段中间结果写到磁盘上，另一方面是shuffle阶段采用http协议从maptask远程复制结果。  
+### Spark架构和原理
+#### Spark起源和特点
+起源于美国加利福尼亚大学伯克利分校  
+* Spark和Hadoop对比  
+1. spark中间数据放在内存中，效率更高。  
+2. RDD抽象适合机器学习  
+3. Spark提供的操作类型很多  
+4. 容错性较好，提供checkpoint。  
+5. 扩展性good
+* 适用场景  
+适用于需要多次操作特定数据集的场景，这个数据集的量越大，性能提升越大。数据量小但是计算密度大的场合就不合适。
+#### Spark核心概念
+* 基本概念  
+RDD  
+Operation：作用与RDD的操作  
+Job：一个Job包含多个RDD及其Operation  
+Stage：一个Job分为多个Stage  
+Partition：数据分区，RDD中数据可以在多个Partition  
+DAG： 反应RDD间依赖  
+Narrow Dependency：一对一依赖  
+Wide Dependency：一对多依赖  
+Caching Management：RDD中间计算结果缓存处理  
+* 编程模式  
+惰性计算，RDD是只读的数据分区集合。  
+作用在RDD上的Operation分为Transformation和Action，Transformation只记录了一个转换路径，action时所有RDD才会提交到cluster中被执行。  
+* 部署  
+Action会作为一个Job提交。此过程中，DAGScheduler介入计算DAG。  
+每个Job划分为多个Stage，TaskScheduler计算Stage所需的Task，提交到对应worker。  
+Spark支持Standalone，Mesos，Yarn等部署模式。
+* RDD  
+RDD是Spark最核心的内容，它已被分区、不可变、能够被并行操作、必须可序列化。  
+RDD的丢失数据部分分区，可通过lineage找回。  
+RDD可序列化的，当内存不足会降级为磁盘存储。（性能还是优于hadoop）  
+RDD是根据每条记录的key进行分区的（hash分区），具有相同的key存储在同一个节点上，保证两个数据集的join高效进行。  
