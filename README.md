@@ -221,3 +221,29 @@ RDD是Spark最核心的内容，它已被分区、不可变、能够被并行操
 RDD的丢失数据部分分区，可通过lineage找回。  
 RDD可序列化的，当内存不足会降级为磁盘存储。（性能还是优于hadoop）  
 RDD是根据每条记录的key进行分区的（hash分区），具有相同的key存储在同一个节点上，保证两个数据集的join高效进行。  
+#### Spark机制详解
+Spark的主要编程语言是Scala，由master和worker组成。  
+用户创建的Spark程序称为driver，driver会连接master并定义对各RDD进行转换和操作。Scala使用java对象对RDD闭包和序列化，把闭包操作发送到worker上，worker负责存储数据和享有集群内存，是运行在工作节点上的守护进程。当收到RDD的操作请求后，根据数据分片信息进行本地化数据操作。  
+* 实例化  
+第一步就是创建或使用SparkContext实例，通过SC创建RDD操作。  
+* api接口  
+spark-shell/java/python/dataframe/spark SQL
+* 查询优化  
+直接用内置的spark SQL吧，已经将查询经过优化了。  
+* 运行模式
+standalone/mesos/yarn  
+-standalone 适合本机调试  
+-yarn
+* 两种调度模式  
+FiFO/FAIR（资源用的少的优先级高）  
+#### Shuffle
+当map端结果被reduce端使用时，输出结果需要按key进行哈希计算，并且分发到每一个reducer上，这个过程就是shuffle。因为涉及到网络传输和磁盘IO，很关键。  
+### BSP框架
+BSP（Bulk Synchronous Parallel，整体同步并行计算模型），常见的并行计算模型还有PARM、LogP、C3、BDM  
+#### 基本原理
+该模型基于一个master协调，多个worker同步执行，数据从输入的队列中读取。
+#### 优点
+对比mapreduce  
+1. 执行机制不同，bsp是状态模型，并行任务之间通过消息通信交流中间计算结果。  
+2. bsp模型仅启动一个作业，利用多个超步完成迭代处理，执行效率更高。  
+3. bsp实时性能更好。  
